@@ -77,7 +77,8 @@ def test_name(gce_resource, gce_host):
     {'dc': 'gce-dc',
      'role': 'control',
      'sshKeys': 'fake ssh key',
-     'ansible_internal_ip': "true"},
+     'ansible_internal_ip': "true"
+    },
     'network': [],
     'network_interface': [{
         'network': 'mantl',
