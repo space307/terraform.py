@@ -632,6 +632,8 @@ def gce_host(resource, module_name, **kwargs):
 
     # general attrs
     attrs = {
+        'private_ipv4': interfaces[0]['address'],
+        'publicly_routable': True,
         'can_ip_forward': raw_attrs['can_ip_forward'] == 'true',
         'disks': parse_attr_list(raw_attrs, 'disk'),
         'machine_type': raw_attrs['machine_type'],
@@ -658,21 +660,19 @@ def gce_host(resource, module_name, **kwargs):
         .get('python_bin', 'python')
     })
 
+    if raw_attrs.get('metadata.ansible_internal_ip', 'false') == 'true':
+        attrs.update({'ansible_host': interfaces[0]['address']})
+    else:
+        attrs.update({'ansible_host': interfaces[0]['access_config'][0]['nat_ip'] or
+            interfaces[0]['access_config'][0]['assigned_nat_ip']})
+
     try:
         attrs.update({
             'public_ipv4': interfaces[0]['access_config'][0]['nat_ip'] or
             interfaces[0]['access_config'][0]['assigned_nat_ip'],
-            'private_ipv4': interfaces[0]['address'],
-            'publicly_routable': True,
         })
     except Exception:
-        attrs.update({'ansible_host': '', 'publicly_routable': False})
-
-    if raw_attrs.get('metadata.ansible_internal_ip', 'false') == 'true':
-        attrs.update({'ansible_host': attrs['private_ipv4']})
-    else:
-        attrs.update({'ansible_host': interfaces[0]['access_config'][0]['nat_ip'] or
-            interfaces[0]['access_config'][0]['assigned_nat_ip']})
+        attrs.update({'publicly_routable': False})
 
     # add groups based on attrs
     groups.extend('gce_image=' + disk['image'] for disk in attrs['disks'])
