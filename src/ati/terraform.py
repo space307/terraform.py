@@ -648,7 +648,7 @@ def gce_host(resource, module_name, **kwargs):
 
     # attrs specific to Ansible
     if 'metadata.ssh_user' in raw_attrs:
-        attrs['ansible_ssh_user'] = raw_attrs['metadata.ssh_user']
+        attrs['ansible_user'] = raw_attrs['metadata.ssh_user']
 
     # attrs specific to Mantl
     attrs.update({
@@ -660,8 +660,6 @@ def gce_host(resource, module_name, **kwargs):
 
     try:
         attrs.update({
-            'ansible_ssh_host': interfaces[0]['access_config'][0]['nat_ip'] or
-            interfaces[0]['access_config'][0]['assigned_nat_ip'],
             'public_ipv4': interfaces[0]['access_config'][0]['nat_ip'] or
             interfaces[0]['access_config'][0]['assigned_nat_ip'],
             'private_ipv4': interfaces[0]['address'],
@@ -669,6 +667,12 @@ def gce_host(resource, module_name, **kwargs):
         })
     except (KeyError, ValueError):
         attrs.update({'ansible_ssh_host': '', 'publicly_routable': False})
+
+    if raw_attrs.get('metadata.ansible_internal_ip', 'false') == 'true':
+        attrs.update({'ansible_host': attrs['private_ipv4']})
+    else:
+        attrs.update({'ansible_host': interfaces[0]['access_config'][0]['nat_ip'] or
+            interfaces[0]['access_config'][0]['assigned_nat_ip']})
 
     # add groups based on attrs
     groups.extend('gce_image=' + disk['image'] for disk in attrs['disks'])
@@ -687,7 +691,7 @@ def gce_host(resource, module_name, **kwargs):
     # groups specific to Mantl
     groups.append('role=' + attrs['metadata'].get('role', 'none'))
     groups.append('dc=' + attrs['consul_dc'])
-
+    
     return name, attrs, groups
 
 

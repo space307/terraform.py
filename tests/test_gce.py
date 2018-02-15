@@ -33,6 +33,7 @@ def gce_resource():
                 "metadata.role": "control",
                 "metadata.sshKeys": "fake ssh key",
                 "metadata_fingerprint": "RRQXhOpeylY=",
+                "metadata.ansible_internal_ip": "true",
                 "name": "mi-control-01",
                 "network.#": "0",
                 "network_interface.#": "1",
@@ -73,9 +74,12 @@ def test_name(gce_resource, gce_host):
     }],
     'machine_type': 'n1-standard-1',
     'metadata':
-    {'dc': 'gce-dc',
+    {
+     'dc': 'gce-dc',
      'role': 'control',
-     'sshKeys': 'fake ssh key', },
+     'sshKeys': 'fake ssh key',
+     'ansible_internal_ip': "true"
+    },
     'network': [],
     'network_interface': [{
         'network': 'mantl',
@@ -89,7 +93,7 @@ def test_name(gce_resource, gce_host):
     'tags': ['mi', 'control'],
     'zone': 'us-central1-a',
     # ansible
-    'ansible_ssh_host': '104.197.63.156',
+    'ansible_host': '10.0.237.130',
     # mi
     'consul_dc': 'gce-dc',
     'role': 'control',
