@@ -665,8 +665,8 @@ def gce_host(resource, module_name, **kwargs):
             'private_ipv4': interfaces[0]['address'],
             'publicly_routable': True,
         })
-    except (KeyError, ValueError):
-        attrs.update({'ansible_ssh_host': '', 'publicly_routable': False})
+    except Exception:
+        attrs.update({'ansible_host': '', 'publicly_routable': False})
 
     if raw_attrs.get('metadata.ansible_internal_ip', 'false') == 'true':
         attrs.update({'ansible_host': attrs['private_ipv4']})
