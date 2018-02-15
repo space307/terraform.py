@@ -670,6 +670,9 @@ def gce_host(resource, module_name, **kwargs):
     except (KeyError, ValueError):
         attrs.update({'ansible_ssh_host': '', 'publicly_routable': False})
 
+    if raw_attrs.get('metadata.ansible_internal_ip', 'false') == 'true':
+        attrs.update({'ansible_host': attrs['private_ipv4']})
+
     # add groups based on attrs
     groups.extend('gce_image=' + disk['image'] for disk in attrs['disks'])
     groups.append('gce_machine_type=' + attrs['machine_type'])
@@ -687,7 +690,7 @@ def gce_host(resource, module_name, **kwargs):
     # groups specific to Mantl
     groups.append('role=' + attrs['metadata'].get('role', 'none'))
     groups.append('dc=' + attrs['consul_dc'])
-
+    
     return name, attrs, groups
 
 
